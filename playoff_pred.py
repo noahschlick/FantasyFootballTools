@@ -5,55 +5,10 @@
 
 import random
 from collections import defaultdict
-import math
 
 
-teams_to_player_names = {
-    "TeamA": ["Noah"],
-    "TeamB": ["Dylan"],
-    "TeamC": ["Ethan"],
-    "TeamD": ["Beaman"],
-    "TeamE": ["Pat"],
-    "TeamF": ["Vondy"],
-    "TeamG": ["Hailey"],
-    "TeamH": ["Nathan"],
-    "TeamI": ["Jonathan"],
-    "TeamJ": ["Marshall"],
-    "TeamK": ["Javi"],
-    "TeamL": ["Ashlyn"]
-}
-
-teams = [
-    "TeamA","TeamB","TeamC","TeamD","TeamE","TeamF",
-    "TeamG","TeamH","TeamI","TeamJ","TeamK","TeamL"
-]
-
-# current wins and points. Format: (wins, points)
-current_wins = {
-    "TeamA": (8, 3, 1479.74), "TeamB": (9, 2, 1368.38), "TeamC": (7, 4, 1385.00), "TeamD": (8, 3, 1443.62),
-    "TeamE": (7, 4, 1297.58), "TeamF": (5, 6, 1208.72), "TeamG": (4, 7, 1302.54), "TeamH": (5, 6, 1271.86),
-    "TeamI": (5, 6, 1180.96), "TeamJ": (4, 7, 1056.94), "TeamK": (3, 8, 1302.36), "TeamL": (1, 10, 990.18)
-}
-
-# remaining schedule: list of (home, away) matchups
-# fill with actual remaining games; example placeholders
-schedule = [
-    # # week 11
-    # ("TeamA","TeamK"), ("TeamC","TeamD"), ("TeamE","TeamL"),
-    # ("TeamI","TeamF"), ("TeamB","TeamG"), ("TeamJ","TeamH"),
-    # week 12
-    ("TeamA","TeamD"), ("TeamC","TeamK"), ("TeamE","TeamH"),
-    ("TeamI","TeamB"), ("TeamG","TeamF"), ("TeamJ","TeamL"),
-    # week 13
-    ("TeamA","TeamL"), ("TeamC","TeamF"), ("TeamE","TeamI"),
-    ("TeamB","TeamH"), ("TeamG","TeamK"), ("TeamJ","TeamD"),
-    # week 14
-    ("TeamA","TeamJ"), ("TeamC","TeamG"), ("TeamE","TeamB"),
-    ("TeamI","TeamH"), ("TeamF","TeamK"), ("TeamD","TeamL"),
-]
-
-
-def calculate_playoff_odds(num_simulations=50000, schedule=schedule, teams=teams, current_wins=current_wins):
+#TODO: Update to caluculate ties as well
+def calculate_playoff_odds(schedule, teams, current_wins, num_simulations=50000):
     """
     Calculate the probability of each team making the playoffs.
     
@@ -82,9 +37,9 @@ def calculate_playoff_odds(num_simulations=50000, schedule=schedule, teams=teams
     # This allows teams to regress toward their own average, not league average
     team_avg_ppg = {}
     for team in teams:
-        wins, loses, points = current_wins[team]
+        wins, losses, ties, points = current_wins[team]
         # Estimate games played (assume ~11 weeks played so far)
-        games_played = wins + loses
+        games_played = wins + losses + ties
         avg_ppg = points / games_played
         team_avg_ppg[team] = avg_ppg
     
@@ -105,7 +60,7 @@ def calculate_playoff_odds(num_simulations=50000, schedule=schedule, teams=teams
         # Initialize team records for this simulation
         sim_record = {}
         for team in teams:
-            wins, loses, points = current_wins[team]
+            wins, losses, ties, points = current_wins[team]
             sim_record[team] = [wins, points]
         
         # Simulate remaining games
@@ -168,7 +123,7 @@ def calculate_playoff_odds(num_simulations=50000, schedule=schedule, teams=teams
     return playoff_odds, bye_odds, average_finishes
 
 
-def print_playoff_odds_report(num_simulations=50000, playoff_odds=None, bye_odds=None, average_finishes=None):
+def print_playoff_odds_report(num_simulations=100000, playoff_odds=None, bye_odds=None, average_finishes=None):
     """
     Print a formatted report of playoff odds for all teams.
     """
@@ -188,12 +143,11 @@ def print_playoff_odds_report(num_simulations=50000, playoff_odds=None, bye_odds
     )
     
     for team in sorted_teams:
-        player_name = teams_to_player_names[team][0]
         playoff_pct = playoff_odds[team] * 100
         bye_pct = bye_odds[team] * 100
         avg_finish = average_finishes[team]
         
-        print(f"{team:<10} {player_name:<15} {playoff_pct:>8.4f}%        {bye_pct:>6.1f}%        {avg_finish:>6.2f}")
+        print(f"{team:<10} {playoff_pct:>8.4f}%        {bye_pct:>6.1f}%        {avg_finish:>6.2f}")
     
     print(f"\n{'='*80}\n")
 

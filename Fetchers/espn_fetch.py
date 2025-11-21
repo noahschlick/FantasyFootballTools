@@ -1,14 +1,14 @@
 from espn_api.football import League
 from datetime import datetime
-import requests
 
 def fetch_espn(league_id):
     year = datetime.now().year
     league = League(league_id=league_id, year=year)
     current_wins = {}
-    teams = league.teams
-    for team in teams:
-        current_wins[team.team_abbrev] = (team.wins, team.losses, team.points_for)
+    teams = []
+    for team in league.teams:
+        teams.append(team.team_abbrev)
+        current_wins[team.team_abbrev] = (team.wins, team.losses, team.ties, team.points_for)
     remaining_schedule = []
     current_week = league.current_week
     for week in range(current_week, 18):
@@ -20,13 +20,3 @@ def fetch_espn(league_id):
                     box_score.away_team.team_abbrev
                 ))
     return current_wins, remaining_schedule, teams
-
-def fetch_sleeper(league_id):
-    year = datetime.now().year
-    url = f"https://api.sleeper.app/v1/league/{league_id}"
-    try:
-        users = requests.get(f"{url}/league/{league_id}/users").json()
-        return users
-    except Exception as e:
-        print(f"Error fetching data from Sleeper API: {e}")
-        return None

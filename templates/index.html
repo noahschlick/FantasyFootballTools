@@ -1,0 +1,413 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Fantasy Football Playoff Odds Calculator</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #1e3a8a 0%, #0f172a 100%);
+            color: #e2e8f0;
+            min-height: 100vh;
+            padding: 20px;
+        }
+        
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+        
+        header {
+            text-align: center;
+            margin-bottom: 40px;
+            padding: 20px 0;
+        }
+        
+        h1 {
+            font-size: 2.5em;
+            margin-bottom: 10px;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.5);
+        }
+        
+        .subtitle {
+            font-size: 1.1em;
+            color: #cbd5e1;
+        }
+        
+        .control-panel {
+            background: rgba(15, 23, 42, 0.8);
+            border: 2px solid #3b82f6;
+            border-radius: 10px;
+            padding: 30px;
+            margin-bottom: 30px;
+            backdrop-filter: blur(10px);
+        }
+        
+        .form-group {
+            margin-bottom: 20px;
+        }
+        
+        .form-group label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: 600;
+            color: #60a5fa;
+        }
+        
+        .input-group {
+            display: flex;
+            gap: 10px;
+            flex-wrap: wrap;
+        }
+        
+        select, input {
+            padding: 10px 15px;
+            border: 2px solid #3b82f6;
+            border-radius: 6px;
+            background: #1e293b;
+            color: #e2e8f0;
+            font-size: 1em;
+            flex: 1;
+            min-width: 200px;
+        }
+        
+        select:hover, input:hover {
+            border-color: #60a5fa;
+        }
+        
+        button {
+            padding: 10px 25px;
+            background: #3b82f6;
+            color: white;
+            border: none;
+            border-radius: 6px;
+            font-size: 1em;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            white-space: nowrap;
+        }
+        
+        button:hover {
+            background: #2563eb;
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(59, 130, 246, 0.4);
+        }
+        
+        button:active {
+            transform: translateY(0);
+        }
+        
+        .loading {
+            display: none;
+            text-align: center;
+            padding: 20px;
+            color: #60a5fa;
+        }
+        
+        .spinner {
+            display: inline-block;
+            width: 20px;
+            height: 20px;
+            border: 3px solid rgba(96, 165, 250, 0.3);
+            border-radius: 50%;
+            border-top-color: #60a5fa;
+            animation: spin 1s linear infinite;
+        }
+        
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+        
+        .results {
+            display: none;
+        }
+        
+        .results-table {
+            width: 100%;
+            border-collapse: collapse;
+            background: rgba(15, 23, 42, 0.8);
+            border-radius: 10px;
+            overflow: hidden;
+            backdrop-filter: blur(10px);
+            border: 2px solid #3b82f6;
+        }
+        
+        .results-table thead {
+            background: linear-gradient(90deg, #1e3a8a, #0f172a);
+        }
+        
+        .results-table th {
+            padding: 16px;
+            text-align: right;
+            font-weight: 600;
+            color: #60a5fa;
+            border-bottom: 2px solid #3b82f6;
+        }
+        
+        .results-table th:first-child,
+        .results-table th:nth-child(2),
+        .results-table th:nth-child(3) {
+            text-align: left;
+        }
+        
+        .results-table td {
+            padding: 14px 16px;
+            border-bottom: 1px solid #334155;
+        }
+        
+        .results-table tbody tr:hover {
+            background: rgba(59, 130, 246, 0.1);
+        }
+        
+        .results-table tbody tr:last-child td {
+            border-bottom: none;
+        }
+        
+        .team-name {
+            font-weight: 600;
+            color: #60a5fa;
+        }
+        
+        .player-name {
+            color: #cbd5e1;
+        }
+        
+        .stat-value {
+            text-align: right;
+            font-weight: 600;
+        }
+        
+        .stat-high {
+            color: #10b981;
+        }
+        
+        .stat-medium {
+            color: #f59e0b;
+        }
+        
+        .stat-low {
+            color: #ef4444;
+        }
+        
+        .error {
+            background: rgba(239, 68, 68, 0.1);
+            border: 2px solid #ef4444;
+            color: #fca5a5;
+            padding: 15px;
+            border-radius: 6px;
+            margin-top: 20px;
+            display: none;
+        }
+        
+        .info-box {
+            background: rgba(59, 130, 246, 0.1);
+            border-left: 4px solid #3b82f6;
+            padding: 15px;
+            border-radius: 6px;
+            margin-top: 20px;
+            display: none;
+        }
+        
+        .info-box.show {
+            display: block;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>🏈 Playoff Odds Calculator</h1>
+            <p class="subtitle">Monte Carlo Simulation Based Analysis</p>
+        </header>
+        
+        <div class="control-panel">
+            <div class="form-group">
+                <label for="dataSource">Data Source:</label>
+                <div class="input-group">
+                    <select id="dataSource">
+                        <option value="espn">ESPN Fantasy League</option>
+                        <option value="sleeper">Sleeper Fantasy League</option>
+                        <option value="csv">CSV Upload</option>
+                    </select>
+                </div>
+            </div>
+            
+            <div id="leagueIdField">
+                <div class="form-group">
+                    <label for="leagueId">League ID:</label>
+                    <input type="text" id="leagueId" placeholder="Enter your league ID">
+                </div>
+            </div>
+            
+            <div id="csvField" style="display: none;">
+                <div class="form-group">
+                    <label>Upload CSV Files:</label>
+                    <div class="input-group" style="flex-direction: column; gap: 15px;">
+                        <div>
+                            <label style="font-size: 0.9em; color: #cbd5e1; margin-bottom: 5px; display: block;">Teams File (team_stats.csv):</label>
+                            <input type="file" id="teamsFile" accept=".csv" placeholder="team_stats.csv">
+                        </div>
+                        <div>
+                            <label style="font-size: 0.9em; color: #cbd5e1; margin-bottom: 5px; display: block;">Schedule File (remaining_schedule.csv):</label>
+                            <input type="file" id="scheduleFile" accept=".csv" placeholder="remaining_schedule.csv">
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <button onclick="calculateOdds()">Calculate Playoff Odds</button>
+        </div>
+        
+        <div class="loading" id="loading">
+            <div class="spinner"></div>
+            <p>Calculating odds (50,000 simulations)...</p>
+        </div>
+        
+        <div class="error" id="error"></div>
+        
+        <div class="results" id="results">
+            <div class="info-box show">
+                <strong>Top 6 teams make playoffs</strong> • <strong>Top 2 teams receive byes</strong> • Rankings based on wins, then points
+            </div>
+            <table class="results-table">
+                <thead>
+                    <tr>
+                        <th>Rank</th>
+                        <th>Team</th>
+                        <th>Owner</th>
+                        <th>Playoff Odds</th>
+                        <th>Bye Odds</th>
+                        <th>Avg Finish</th>
+                    </tr>
+                </thead>
+                <tbody id="resultsBody">
+                </tbody>
+            </table>
+        </div>
+    </div>
+    
+    <script>
+        // Toggle input fields based on selected data source
+        document.getElementById('dataSource').addEventListener('change', function() {
+            const source = this.value;
+            document.getElementById('leagueIdField').style.display = (source === 'espn' || source === 'sleeper') ? 'block' : 'none';
+            document.getElementById('csvField').style.display = source === 'csv' ? 'block' : 'none';
+        });
+        
+        async function calculateOdds() {
+            const source = document.getElementById('dataSource').value;
+            const leagueId = document.getElementById('leagueId').value;
+            const teamsFile = document.getElementById('teamsFile').files[0];
+            const scheduleFile = document.getElementById('scheduleFile').files[0];
+            const loading = document.getElementById('loading');
+            const error = document.getElementById('error');
+            const results = document.getElementById('results');
+            
+            // Clear previous results
+            error.style.display = 'none';
+            error.textContent = '';
+            results.style.display = 'none';
+            loading.style.display = 'block';
+            
+            try {
+                let response;
+                
+                if (source === 'csv') {
+                    if (!teamsFile || !scheduleFile) {
+                        throw new Error('Please upload both CSV files (teams and schedule)');
+                    }
+                    response = await uploadCSVFiles(teamsFile, scheduleFile);
+                } else if (source === 'espn' || source === 'sleeper') {
+                    if (!leagueId) {
+                        throw new Error('Please enter a league ID');
+                    }
+                    response = await fetch(`/api/league/${source}/${leagueId}`);
+                }
+                
+                if (!response.ok) {
+                    const errorData = await response.json();
+                    throw new Error(errorData.error || 'Failed to fetch data');
+                }
+                
+                const data = await response.json();
+                displayResults(data);
+                
+            } catch (err) {
+                error.style.display = 'block';
+                error.textContent = '❌ ' + err.message;
+                console.error(err);
+            } finally {
+                loading.style.display = 'none';
+            }
+        }
+        
+        async function uploadCSVFiles(teamsFile, scheduleFile) {
+            const formData = new FormData();
+            formData.append('teams_file', teamsFile);
+            formData.append('schedule_file', scheduleFile);
+            
+            return await fetch('/api/upload-csv', {
+                method: 'POST',
+                body: formData
+            });
+        }
+        
+        function displayResults(data) {
+            // Handle both array format (local data) and object format (API data)
+            let results = [];
+            
+            if (Array.isArray(data)) {
+                results = data;
+            } else if (data.playoff_odds) {
+                // Convert API response to array format
+                const teamNames = Object.keys(data.playoff_odds);
+                results = teamNames.map((team, idx) => ({
+                    rank: idx + 1,
+                    team: team,
+                    player: team,
+                    playoff_odds: Math.round(data.playoff_odds[team] * 100 * 10000) / 10000,
+                    bye_odds: Math.round(data.bye_odds[team] * 100 * 10000) / 10000,
+                    avg_finish: Math.round(data.average_finishes[team] * 100) / 100
+                }));
+                results.sort((a, b) => b.playoff_odds - a.playoff_odds);
+            }
+            
+            // Build table rows
+            const tbody = document.getElementById('resultsBody');
+            tbody.innerHTML = '';
+            
+            results.forEach((item, idx) => {
+                const row = document.createElement('tr');
+                const playoffStat = getStatClass(item.playoff_odds);
+                const byeStat = getStatClass(item.bye_odds);
+                
+                row.innerHTML = `
+                    <td><strong>${idx + 1}</strong></td>
+                    <td class="team-name">${item.team}</td>
+                    <td class="player-name">${item.player}</td>
+                    <td class="stat-value ${playoffStat}">${item.playoff_odds}%</td>
+                    <td class="stat-value ${byeStat}">${item.bye_odds}%</td>
+                    <td class="stat-value">#${item.avg_finish}</td>
+                `;
+                tbody.appendChild(row);
+            });
+            
+            document.getElementById('results').style.display = 'block';
+        }
+        
+        function getStatClass(value) {
+            if (value >= 50) return 'stat-high';
+            if (value >= 20) return 'stat-medium';
+            return 'stat-low';
+        }
+    </script>
+</body>
+</html>
