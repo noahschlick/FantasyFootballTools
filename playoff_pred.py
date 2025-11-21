@@ -8,7 +8,7 @@ from collections import defaultdict
 
 
 #TODO: Update to caluculate ties as well
-def calculate_playoff_odds(schedule, teams, current_wins, num_simulations=50000):
+def calculate_playoff_odds(schedule, teams, current_wins, num_simulations=50000, playoff_teams=6, bye_teams=2):
     """
     Calculate the probability of each team making the playoffs.
     
@@ -29,9 +29,6 @@ def calculate_playoff_odds(schedule, teams, current_wins, num_simulations=50000)
     IMPORTANT: Points fluctuate randomly in remaining games with variance.
     Each week, each team scores between 70% and 130% of league average.
     """
-    
-    playoff_teams = 6
-    bye_teams = 2
     
     # Calculate each team's average points per game
     # This allows teams to regress toward their own average, not league average

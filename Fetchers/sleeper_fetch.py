@@ -67,35 +67,37 @@ def fetch_sleeper_playoff_odds_data(league_id):
     try:
         users = fetch_request(f"{league_url}/users")
         if users is None:
-            return None, None, None
+            return None, None, None, None, None
         
         rosters = fetch_request(f"{league_url}/rosters")
         if rosters is None:
-            return None, None, None
+            return None, None, None, None, None
         
         league_settings = fetch_request(f"{league_url}")
         if league_settings is None:
-            return None, None, None
+            return None, None, None, None, None
         
+        # Get current wins
         current_wins = get_team_data(rosters, users)
-    
+                
+        # Get remaining schedule
+        roster_to_teamname = get_roster_to_teamname_mapping(rosters, users)
         record = rosters[0]['metadata'].get('record')
         if not record:
             raise ValueError("Record metadata not found in rosters.")
         games_played = len(record)
-        roster_to_teamname = get_roster_to_teamname_mapping(rosters, users)
-            
         remaining_schedule = []
         total_weeks = league_settings.get('settings', {}).get('playoff_week_start')
         remaining_schedule = get_remaining_schedule(league_url, games_played, total_weeks, roster_to_teamname)
   
         # Get list of team names
         team_names = list(current_wins.keys())
-                
-        print(f"Remaining schedule: {remaining_schedule}")
+
+        playoff_teams_count = league_settings.get('settings', {}).get('playoff_teams', 6)
+        bye_teams_count = league_settings.get('settings', {}).get('playoff_byes', 2)
         
-        return current_wins, remaining_schedule, team_names
+        return current_wins, remaining_schedule, team_names, playoff_teams_count, bye_teams_count
         
     except Exception as e:
         print(f"Error fetching data from Sleeper API: {e}")
-        return None, None, None
+        return None, None, None, None, None

@@ -259,6 +259,27 @@
                             <label style="font-size: 0.9em; color: #cbd5e1; margin-bottom: 5px; display: block;">Schedule File (remaining_schedule.csv):</label>
                             <input type="file" id="scheduleFile" accept=".csv" placeholder="remaining_schedule.csv">
                         </div>
+                        <div>
+                            <label style="font-size: 0.9em; color: #cbd5e1; margin-bottom: 5px; display: block;">Number of Playoff Teams:</label>
+                            <select id="playoffTeams">
+                                <option value="4">4 Teams</option>
+                                <option value="6" selected>6 Teams</option>
+                                <option value="8">8 Teams</option>
+                                <option value="10">10 Teams</option>
+                                <option value="12">12 Teams</option>
+                            </select>
+                        </div>
+                        <div>
+                            <label style="font-size: 0.9em; color: #cbd5e1; margin-bottom: 5px; display: block;">Number of Bye Teams:</label>
+                            <select id="byeTeams">
+                                <option value="0">No Byes</option>
+                                <option value="1">1 Bye</option>
+                                <option value="2" selected>2 Byes</option>
+                                <option value="3">3 Byes</option>
+                                <option value="4">4 Byes</option>
+                                <option value="6">6 Byes</option>
+                            </select>
+                        </div>
                     </div>
                 </div>
             </div>
@@ -350,9 +371,13 @@
         }
         
         async function uploadCSVFiles(teamsFile, scheduleFile) {
+            const playoffTeams = document.getElementById('playoffTeams').value;
+            const byeTeams = document.getElementById('byeTeams').value;
             const formData = new FormData();
             formData.append('teams_file', teamsFile);
             formData.append('schedule_file', scheduleFile);
+            formData.append('playoff_teams', playoffTeams);
+            formData.append('bye_teams', byeTeams);
             
             return await fetch('/api/upload-csv', {
                 method: 'POST',

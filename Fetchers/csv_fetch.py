@@ -1,6 +1,7 @@
 import csv
 
-def fetch_csv(team_file='Fetchers/resources/team_stats.csv', schedule_file='Fetchers/resources/remaining_schedule.csv'):
+def fetch_csv(team_file='Fetchers/resources/team_stats.csv', 
+              schedule_file='Fetchers/resources/remaining_schedule.csv'):
     current_wins = {}
     teams = []
     remaining_schedule = []

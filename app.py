@@ -23,22 +23,32 @@ def get_league_data(source, league_id):
     fetch_strategy = FETCHERS.get(source)
     if not fetch_strategy:
         return jsonify({'error': 'Unsupported source'}), 400
-    current_wins, remaining_schedule, teams = fetch_strategy(league_id)
+    current_wins, remaining_schedule, teams, playoff_teams, bye_teams = fetch_strategy(league_id)
     print(f"current_wins: {current_wins}")
     print(f"Remaining schedule: {remaining_schedule}")
     print(f"Teams: {teams}")
 
-    playoff_odds, bye_odds, average_finishes = calculate_playoff_odds(num_simulations=100000, schedule=remaining_schedule, teams=teams, current_wins=current_wins)
+    playoff_odds, bye_odds, average_finishes = calculate_playoff_odds(num_simulations=100000, 
+                                                                    schedule=remaining_schedule, 
+                                                                    teams=teams, 
+                                                                    current_wins=current_wins,
+                                                                    playoff_teams=playoff_teams, 
+                                                                    bye_teams=bye_teams)
     return jsonify({"playoff_odds": playoff_odds, "bye_odds": bye_odds, "average_finishes": average_finishes})
 
-@app.route('/api/sleeper_league/csv')
-def get_sleeper_csv_league_data():
-    current_wins, remaining_schedule, teams = fetch_csv()
-    print(f"current_wins: {current_wins}")
-    print(f"Remaining schedule: {remaining_schedule}")
-    print(f"Teams: {teams}")
-    playoff_odds, bye_odds, average_finishes = calculate_playoff_odds(num_simulations=100000, schedule=remaining_schedule, teams=teams, current_wins=current_wins)
-    return jsonify({"playoff_odds": playoff_odds, "bye_odds": bye_odds, "average_finishes": average_finishes})
+# @app.route('/api/sleeper_league/csv')
+# def get_sleeper_csv_league_data():
+#     current_wins, remaining_schedule, teams = fetch_csv()
+#     print(f"current_wins: {current_wins}")
+#     print(f"Remaining schedule: {remaining_schedule}")
+#     print(f"Teams: {teams}")
+#     playoff_odds, bye_odds, average_finishes = calculate_playoff_odds(num_simulations=100000, 
+#                                                                       schedule=remaining_schedule, 
+#                                                                       teams=teams, 
+#                                                                       current_wins=current_wins, 
+#                                                                       playoff_teams=playoff_teams, 
+#                                                                       bye_teams=bye_teams)
+#     return jsonify({"playoff_odds": playoff_odds, "bye_odds": bye_odds, "average_finishes": average_finishes})
 
 @app.route('/api/upload-csv', methods=['POST'])
 def upload_csv():
@@ -49,9 +59,11 @@ def upload_csv():
     resources_dir = os.path.join(os.path.dirname(__file__), 'Fetchers', 'resources')
     os.makedirs(resources_dir, exist_ok=True)
     
-    # Get uploaded files
+    # Get uploaded files and playoff settings
     teams_file = request.files.get('teams_file')
     schedule_file = request.files.get('schedule_file')
+    playoff_teams = int(request.form.get('playoff_teams', 6))
+    bye_teams = int(request.form.get('bye_teams', 2))
     
     if not teams_file or not schedule_file:
         return jsonify({'error': 'Both files are required'}), 400
@@ -116,11 +128,22 @@ def upload_csv():
         
         # Fetch and calculate
         current_wins, remaining_schedule, teams = fetch_csv(teams_path, schedule_path)
+        
+        # Validate playoff settings
+        total_teams = len(teams)
+        if playoff_teams > total_teams:
+            return jsonify({'error': f'Playoff teams ({playoff_teams}) cannot exceed total teams ({total_teams})'}), 400
+        
+        if bye_teams >= playoff_teams:
+            return jsonify({'error': f'Bye teams ({bye_teams}) must be less than playoff teams ({playoff_teams})'}), 400
+        
         playoff_odds, bye_odds, average_finishes = calculate_playoff_odds(
             num_simulations=50000, 
             schedule=remaining_schedule, 
             teams=teams, 
-            current_wins=current_wins
+            current_wins=current_wins,
+            playoff_teams=playoff_teams,
+            bye_teams=bye_teams
         )
         
         return jsonify({
