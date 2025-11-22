@@ -27,18 +27,6 @@ def fetch_espn(league_id):
         current_week = league.current_week
         reg_season_count = league.settings.reg_season_count
         # Use scoreboard to get matchups for each remaining week
-        # for week in range(current_week, league.settings.reg_season_count + 1):
-        #     try:
-        #         # scoreboard() returns matchups for a given week
-        #         matchups = league.scoreboard(week=week)
-        #         for matchup in matchups:
-        #             remaining_schedule.append((
-        #                 matchup.home_team.team_name,
-        #                 matchup.away_team.team_name
-        #             ))
-        #     except Exception as e:
-        #         print(f"Warning: Could not fetch matchups for week {week}: {e}")
-        #         continue
         with ThreadPoolExecutor(max_workers=5)as executer:
             futures = [executer.submit(fetch_week_matchups, league, week)
                        for week in range(current_week, reg_season_count + 1)]

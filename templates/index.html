@@ -505,7 +505,7 @@
         
         <div class="results" id="results">
             <div class="info-box show">
-                <strong>Top 6 teams make playoffs</strong> • <strong>Top 2 teams receive byes</strong> • Rankings based on wins, then points
+                <!-- <strong>Top 6 teams make playoffs</strong> • <strong>Top 2 teams receive byes</strong> • Rankings based on wins, then points -->
             </div>
             <table class="results-table">
                 <thead>
@@ -643,6 +643,19 @@
             
             // Sort by average finish (ascending - lower is better)
             results.sort((a, b) => a.avg_finish - b.avg_finish);
+            
+            // Update info box with current settings
+            const source = document.getElementById('dataSource').value;
+            let playoffTeams = data.playoff_teams;
+            let byeTeams = data.bye_teams;
+            
+            if (source === 'csv') {
+                playoffTeams = parseInt(document.getElementById('playoffTeams').value);
+                byeTeams = parseInt(document.getElementById('byeTeams').value);
+            }
+            
+            const byeText = byeTeams === 0 ? 'No byes' : `${byeTeams} team${byeTeams > 1 ? 's' : ''} receive${byeTeams > 1 ? '' : 's'} bye${byeTeams > 1 ? 's' : ''}`;
+            document.querySelector('.info-box').innerHTML = `<strong>Top ${playoffTeams} teams make playoffs</strong> • <strong>${byeText}</strong> • Rankings based on wins, then points`;
             
             // Build table rows
             const tbody = document.getElementById('resultsBody');

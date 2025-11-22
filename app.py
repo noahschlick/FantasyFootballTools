@@ -47,21 +47,14 @@ def get_league_data(source, league_id):
                                                                     playoff_teams=playoff_teams, 
                                                                     bye_teams=bye_teams)
     print(f"Playoff odds: {playoff_odds}")
-    return jsonify({"playoff_odds": playoff_odds, "bye_odds": bye_odds, "average_finishes": average_finishes})
+    return jsonify({
+        "playoff_odds": playoff_odds, 
+        "bye_odds": bye_odds, 
+        "average_finishes": average_finishes,
+        "bye_teams": bye_teams,
+        "playoff_teams": playoff_teams
+    })
 
-# @app.route('/api/sleeper_league/csv')
-# def get_sleeper_csv_league_data():
-#     current_wins, remaining_schedule, teams = fetch_csv()
-#     print(f"current_wins: {current_wins}")
-#     print(f"Remaining schedule: {remaining_schedule}")
-#     print(f"Teams: {teams}")
-#     playoff_odds, bye_odds, average_finishes = calculate_playoff_odds(num_simulations=100000, 
-#                                                                       schedule=remaining_schedule, 
-#                                                                       teams=teams, 
-#                                                                       current_wins=current_wins, 
-#                                                                       playoff_teams=playoff_teams, 
-#                                                                       bye_teams=bye_teams)
-#     return jsonify({"playoff_odds": playoff_odds, "bye_odds": bye_odds, "average_finishes": average_finishes})
 
 @app.route('/api/upload-csv', methods=['POST'])
 def upload_csv():
@@ -176,7 +169,9 @@ def upload_csv():
         return jsonify({
             "playoff_odds": playoff_odds, 
             "bye_odds": bye_odds, 
-            "average_finishes": average_finishes
+            "average_finishes": average_finishes,
+            "bye_teams": bye_teams,
+            "playoff_teams": playoff_teams
         })
     except Exception as e:
         return jsonify({'error': 'Invalid CSV format or parsing error'}), 400
