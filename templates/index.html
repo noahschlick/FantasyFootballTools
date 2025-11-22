@@ -67,7 +67,7 @@
             flex-wrap: wrap;
         }
         
-        select, input {
+        select, input[type="text"], input[type="file"], input[type="number"] {
             padding: 10px 15px;
             border: 2px solid #3b82f6;
             border-radius: 6px;
@@ -78,8 +78,99 @@
             min-width: 200px;
         }
         
-        select:hover, input:hover {
+        select:hover, input[type="text"]:hover, input[type="file"]:hover, input[type="number"]:hover {
             border-color: #60a5fa;
+        }
+        
+        input[type="range"] {
+            width: 100%;
+            height: 8px;
+            border-radius: 4px;
+            background: #334155;
+            outline: none;
+            -webkit-appearance: none;
+            appearance: none;
+        }
+        
+        input[type="range"]::-webkit-slider-runnable-track {
+            width: 100%;
+            height: 8px;
+            background: #334155;
+            border-radius: 4px;
+        }
+        
+        input[type="range"]::-moz-range-track {
+            width: 100%;
+            height: 8px;
+            background: #334155;
+            border-radius: 4px;
+            border: none;
+        }
+        
+        input[type="range"]::-moz-range-progress {
+            background: #3b82f6;
+            height: 8px;
+            border-radius: 4px;
+        }
+        
+        input[type="range"]::-webkit-slider-thumb {
+            -webkit-appearance: none;
+            appearance: none;
+            width: 22px;
+            height: 22px;
+            border-radius: 50%;
+            background: #3b82f6;
+            cursor: pointer;
+            box-shadow: 0 2px 8px rgba(59, 130, 246, 0.6);
+            transition: all 0.2s ease;
+            border: 2px solid #60a5fa;
+            margin-top: -7px;
+        }
+        
+        input[type="range"]::-webkit-slider-thumb:hover {
+            background: #60a5fa;
+            box-shadow: 0 4px 12px rgba(96, 165, 250, 0.8);
+            transform: scale(1.1);
+        }
+        
+        input[type="range"]::-moz-range-thumb {
+            width: 22px;
+            height: 22px;
+            border-radius: 50%;
+            background: #3b82f6;
+            cursor: pointer;
+            box-shadow: 0 2px 8px rgba(59, 130, 246, 0.6);
+            border: 2px solid #60a5fa;
+            transition: all 0.2s ease;
+        }
+        
+        input[type="range"]::-moz-range-thumb:hover {
+            background: #60a5fa;
+            box-shadow: 0 4px 12px rgba(96, 165, 250, 0.8);
+            transform: scale(1.1);
+        }
+        
+        .slider-container {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+        }
+        
+        .slider-container input[type="range"] {
+            flex: 1;
+            min-width: 200px;
+        }
+        
+        .slider-value {
+            min-width: 80px;
+            padding: 8px 12px;
+            background: rgba(59, 130, 246, 0.2);
+            border: 1px solid #3b82f6;
+            border-radius: 4px;
+            color: #60a5fa;
+            font-weight: 600;
+            text-align: center;
+            font-size: 0.95em;
         }
         
         button {
@@ -103,6 +194,65 @@
         
         button:active {
             transform: translateY(0);
+        }
+        
+        .help-icon {
+            display: inline-block;
+            width: 20px;
+            height: 20px;
+            margin-left: 8px;
+            background: rgba(96, 165, 250, 0.3);
+            border: 2px solid #60a5fa;
+            border-radius: 50%;
+            text-align: center;
+            line-height: 16px;
+            color: #60a5fa;
+            font-weight: bold;
+            font-size: 0.9em;
+            cursor: help;
+            position: relative;
+            transition: all 0.2s ease;
+        }
+        
+        .help-icon:hover {
+            background: rgba(96, 165, 250, 0.5);
+            box-shadow: 0 2px 8px rgba(96, 165, 250, 0.4);
+        }
+        
+        .tooltip {
+            visibility: hidden;
+            position: absolute;
+            z-index: 1000;
+            bottom: 125%;
+            left: 50%;
+            transform: translateX(-50%);
+            background-color: #1e293b;
+            color: #e2e8f0;
+            text-align: center;
+            border: 2px solid #3b82f6;
+            border-radius: 6px;
+            padding: 12px 16px;
+            width: 280px;
+            font-size: 0.85em;
+            font-weight: normal;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.5);
+            white-space: normal;
+            line-height: 1.4;
+        }
+        
+        .tooltip::after {
+            content: "";
+            position: absolute;
+            top: 100%;
+            left: 50%;
+            margin-left: -8px;
+            border-width: 8px;
+            border-style: solid;
+            border-color: #3b82f6 transparent transparent transparent;
+        }
+        
+        .help-icon:hover .tooltip {
+            visibility: visible;
         }
         
         .loading {
@@ -153,9 +303,14 @@
         }
         
         .results-table th:first-child,
-        .results-table th:nth-child(2),
-        .results-table th:nth-child(3) {
+        .results-table th:nth-child(2) {
             text-align: left;
+        }
+        
+        .results-table th:nth-child(3),
+        .results-table th:nth-child(4),
+        .results-table th:nth-child(5) {
+            text-align: right;
         }
         
         .results-table td {
@@ -242,14 +397,40 @@
             
             <div id="leagueIdField">
                 <div class="form-group">
-                    <label for="leagueId">League ID:</label>
+                    <label for="leagueId">
+                        League ID:
+                        <span class="help-icon">
+                            i
+                            <span class="tooltip">
+                                <strong>How to find your League ID:</strong><br><br>
+                                <strong>ESPN:</strong> Go to your league page. The URL will contain: league/XXXXXX (the numbers are your ID). <em>Note: League must be public</em><br><br>
+                                <strong>Sleeper:</strong> Open your league settings. Your League ID is displayed there or in the URL
+                            </span>
+                        </span>
+                    </label>
                     <input type="text" id="leagueId" placeholder="Enter your league ID">
                 </div>
             </div>
             
             <div id="csvField" style="display: none;">
                 <div class="form-group">
-                    <label>Upload CSV Files:</label>
+                    <label>
+                        Upload CSV Files:
+                        <span class="help-icon">
+                            i
+                            <span class="tooltip" style="width: 320px;">
+                                <strong>CSV Format Required:</strong><br><br>
+                                <strong>Teams File (team_stats.csv):</strong><br>
+                                Columns: team_name, wins, losses, ties, points_for<br>
+                                Example:<br>
+                                <code style="display: block; background: rgba(0,0,0,0.3); padding: 8px; margin: 8px 0; border-radius: 4px; font-size: 0.85em;">team_name,wins,losses,ties,points_for<br>Team A,7,2,0,1250.5<br>Team B,6,3,0,1200.25</code><br>
+                                <strong>Schedule File (remaining_schedule.csv):</strong><br>
+                                Columns: home_team, away_team<br>
+                                Example:<br>
+                                <code style="display: block; background: rgba(0,0,0,0.3); padding: 8px; margin: 8px 0; border-radius: 4px; font-size: 0.85em;">home_team,away_team<br>Team A,Team B<br>Team C,Team D</code>
+                            </span>
+                        </span>
+                    </label>
                     <div class="input-group" style="flex-direction: column; gap: 15px;">
                         <div>
                             <label style="font-size: 0.9em; color: #cbd5e1; margin-bottom: 5px; display: block;">Teams File (team_stats.csv):</label>
@@ -284,6 +465,34 @@
                 </div>
             </div>
             
+            <div class="form-group">
+                <label for="numSimulations">Number of Simulations:</label>
+                <div class="slider-container">
+                    <input type="range" id="numSimulations" min="1" max="100000" value="50000" step="1">
+                    <span class="slider-value" id="numSimulationsValue">50,000</span>
+                </div>
+            </div>
+            
+            <div class="form-group">
+                <label for="stdDev">
+                    Standard Deviation:
+                    <span class="help-icon">
+                        i
+                        <span class="tooltip" style="width: 300px;">
+                            <strong>What is Standard Deviation?</strong><br><br>
+                            Controls how much team performance varies week-to-week.<br><br>
+                            <strong>0%:</strong> Teams score exactly their average every week (no randomness)<br><br>
+                            <strong>50%:</strong> Typical variance - teams can have good/bad weeks (realistic)<br><br>
+                            <strong>100%:</strong> High variance - wildly unpredictable outcomes, underdog teams have better odds
+                        </span>
+                    </span>
+                </label>
+                <div class="slider-container">
+                    <input type="range" id="stdDev" min="0" max="100" value="50" step="1">
+                    <span class="slider-value" id="stdDevValue">50%</span>
+                </div>
+            </div>
+            
             <button onclick="calculateOdds()">Calculate Playoff Odds</button>
         </div>
         
@@ -303,7 +512,6 @@
                     <tr>
                         <th>Rank</th>
                         <th>Team</th>
-                        <th>Owner</th>
                         <th>Playoff Odds</th>
                         <th>Bye Odds</th>
                         <th>Avg Finish</th>
@@ -316,6 +524,15 @@
     </div>
     
     <script>
+        // Update slider value displays
+        document.getElementById('numSimulations').addEventListener('input', function() {
+            document.getElementById('numSimulationsValue').textContent = parseInt(this.value).toLocaleString();
+        });
+        
+        document.getElementById('stdDev').addEventListener('input', function() {
+            document.getElementById('stdDevValue').textContent = this.value + '%';
+        });
+        
         // Toggle input fields based on selected data source
         document.getElementById('dataSource').addEventListener('change', function() {
             const source = this.value;
@@ -328,15 +545,34 @@
             const leagueId = document.getElementById('leagueId').value;
             const teamsFile = document.getElementById('teamsFile').files[0];
             const scheduleFile = document.getElementById('scheduleFile').files[0];
+            const numSimulations = parseInt(document.getElementById('numSimulations').value);
+            const stdDev = parseInt(document.getElementById('stdDev').value);
             const loading = document.getElementById('loading');
             const error = document.getElementById('error');
             const results = document.getElementById('results');
+            
+            // Validate simulation count
+            if (isNaN(numSimulations) || numSimulations < 1 || numSimulations > 100000) {
+                error.style.display = 'block';
+                error.textContent = '❌ Number of simulations must be between 1 and 100,000';
+                return;
+            }
+            
+            // Validate standard deviation
+            if (isNaN(stdDev) || stdDev < 0 || stdDev > 100) {
+                error.style.display = 'block';
+                error.textContent = '❌ Standard deviation must be between 0 and 100%';
+                return;
+            }
             
             // Clear previous results
             error.style.display = 'none';
             error.textContent = '';
             results.style.display = 'none';
             loading.style.display = 'block';
+            
+            // Update loading message
+            document.querySelector('.loading p').textContent = `Calculating odds (${numSimulations.toLocaleString()} simulations)...`;
             
             try {
                 let response;
@@ -345,12 +581,12 @@
                     if (!teamsFile || !scheduleFile) {
                         throw new Error('Please upload both CSV files (teams and schedule)');
                     }
-                    response = await uploadCSVFiles(teamsFile, scheduleFile);
+                    response = await uploadCSVFiles(teamsFile, scheduleFile, numSimulations, stdDev);
                 } else if (source === 'espn' || source === 'sleeper') {
                     if (!leagueId) {
                         throw new Error('Please enter a league ID');
                     }
-                    response = await fetch(`/api/league/${source}/${leagueId}`);
+                    response = await fetch(`/api/league/${source}/${leagueId}?simulations=${numSimulations}&std_dev=${stdDev}`);
                 }
                 
                 if (!response.ok) {
@@ -370,7 +606,7 @@
             }
         }
         
-        async function uploadCSVFiles(teamsFile, scheduleFile) {
+        async function uploadCSVFiles(teamsFile, scheduleFile, numSimulations, stdDev) {
             const playoffTeams = document.getElementById('playoffTeams').value;
             const byeTeams = document.getElementById('byeTeams').value;
             const formData = new FormData();
@@ -378,6 +614,8 @@
             formData.append('schedule_file', scheduleFile);
             formData.append('playoff_teams', playoffTeams);
             formData.append('bye_teams', byeTeams);
+            formData.append('simulations', numSimulations);
+            formData.append('std_dev', stdDev);
             
             return await fetch('/api/upload-csv', {
                 method: 'POST',
@@ -397,13 +635,14 @@
                 results = teamNames.map((team, idx) => ({
                     rank: idx + 1,
                     team: team,
-                    player: team,
                     playoff_odds: Math.round(data.playoff_odds[team] * 100 * 10000) / 10000,
                     bye_odds: Math.round(data.bye_odds[team] * 100 * 10000) / 10000,
                     avg_finish: Math.round(data.average_finishes[team] * 100) / 100
                 }));
-                results.sort((a, b) => b.playoff_odds - a.playoff_odds);
             }
+            
+            // Sort by average finish (ascending - lower is better)
+            results.sort((a, b) => a.avg_finish - b.avg_finish);
             
             // Build table rows
             const tbody = document.getElementById('resultsBody');
@@ -417,7 +656,6 @@
                 row.innerHTML = `
                     <td><strong>${idx + 1}</strong></td>
                     <td class="team-name">${item.team}</td>
-                    <td class="player-name">${item.player}</td>
                     <td class="stat-value ${playoffStat}">${item.playoff_odds}%</td>
                     <td class="stat-value ${byeStat}">${item.bye_odds}%</td>
                     <td class="stat-value">#${item.avg_finish}</td>

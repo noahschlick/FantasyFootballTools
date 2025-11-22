@@ -8,7 +8,7 @@ from collections import defaultdict
 
 
 #TODO: Update to caluculate ties as well
-def calculate_playoff_odds(schedule, teams, current_wins, num_simulations=50000, playoff_teams=6, bye_teams=2):
+def calculate_playoff_odds(schedule, teams, current_wins, num_simulations=50000, std_dev=0.50, playoff_teams=6, bye_teams=2):
     """
     Calculate the probability of each team making the playoffs.
     
@@ -19,7 +19,7 @@ def calculate_playoff_odds(schedule, teams, current_wins, num_simulations=50000,
     - playoff_odds: dict with team names as keys and playoff probability as values
     - bye_odds: dict with team names as keys and bye (top 2 seed) probability as values
     - average_finishes: dict with team names as keys and average finishing position as values
-    
+    - std_dev: standard deviation factor for points fluctuation (default 0.50)
     The playoffs consist of 6 teams, ranked by:
     1. Most wins
     2. Highest points scored (tiebreaker)
@@ -46,7 +46,7 @@ def calculate_playoff_odds(schedule, teams, current_wins, num_simulations=50000,
     
     # Standard deviation of team PPGs (how much variance exists week-to-week)
     # Using ~12% of average as typical fantasy football variance
-    league_std_dev = league_avg_ppg * 0.50
+    league_std_dev = league_avg_ppg * std_dev
     
     # Track outcomes across all simulations
     playoff_count = defaultdict(int)

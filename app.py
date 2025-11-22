@@ -23,17 +23,30 @@ def get_league_data(source, league_id):
     fetch_strategy = FETCHERS.get(source)
     if not fetch_strategy:
         return jsonify({'error': 'Unsupported source'}), 400
+    
+    # Get optional parameters from query string
+    try:
+        num_simulations = int(request.args.get('simulations', 50000))
+        std_dev = int(request.args.get('std_dev', 50)) / 100.0  # Convert percentage to decimal
+        
+        # Validate parameters
+        if num_simulations < 1 or num_simulations > 100000:
+            return jsonify({'error': 'Simulations must be between 1 and 100,000'}), 400
+        if std_dev < 0 or std_dev > 1.0:
+            return jsonify({'error': 'Standard deviation must be between 0 and 100%'}), 400
+    except ValueError:
+        return jsonify({'error': 'Invalid parameter format'}), 400
+    
     current_wins, remaining_schedule, teams, playoff_teams, bye_teams = fetch_strategy(league_id)
-    print(f"current_wins: {current_wins}")
-    print(f"Remaining schedule: {remaining_schedule}")
-    print(f"Teams: {teams}")
 
-    playoff_odds, bye_odds, average_finishes = calculate_playoff_odds(num_simulations=100000, 
+    playoff_odds, bye_odds, average_finishes = calculate_playoff_odds(num_simulations=num_simulations, 
+                                                                      std_dev=std_dev,
                                                                     schedule=remaining_schedule, 
                                                                     teams=teams, 
                                                                     current_wins=current_wins,
                                                                     playoff_teams=playoff_teams, 
                                                                     bye_teams=bye_teams)
+    print(f"Playoff odds: {playoff_odds}")
     return jsonify({"playoff_odds": playoff_odds, "bye_odds": bye_odds, "average_finishes": average_finishes})
 
 # @app.route('/api/sleeper_league/csv')
@@ -64,6 +77,19 @@ def upload_csv():
     schedule_file = request.files.get('schedule_file')
     playoff_teams = int(request.form.get('playoff_teams', 6))
     bye_teams = int(request.form.get('bye_teams', 2))
+    
+    # Get optional parameters
+    try:
+        num_simulations = int(request.form.get('simulations', 50000))
+        std_dev = int(request.form.get('std_dev', 50)) / 100.0  # Convert percentage to decimal
+        
+        # Validate parameters
+        if num_simulations < 1 or num_simulations > 100000:
+            return jsonify({'error': 'Simulations must be between 1 and 100,000'}), 400
+        if std_dev < 0 or std_dev > 1.0:
+            return jsonify({'error': 'Standard deviation must be between 0 and 100%'}), 400
+    except ValueError:
+        return jsonify({'error': 'Invalid parameter format'}), 400
     
     if not teams_file or not schedule_file:
         return jsonify({'error': 'Both files are required'}), 400
@@ -138,7 +164,8 @@ def upload_csv():
             return jsonify({'error': f'Bye teams ({bye_teams}) must be less than playoff teams ({playoff_teams})'}), 400
         
         playoff_odds, bye_odds, average_finishes = calculate_playoff_odds(
-            num_simulations=50000, 
+            num_simulations=num_simulations, 
+            std_dev=std_dev,
             schedule=remaining_schedule, 
             teams=teams, 
             current_wins=current_wins,

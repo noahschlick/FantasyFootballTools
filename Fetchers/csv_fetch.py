@@ -11,6 +11,7 @@ def fetch_csv(team_file='Fetchers/resources/team_stats.csv',
             reader = csv.DictReader(f)
             for row in reader:
                 print(f"Row: {row}")
+                
                 team_name = row['team_name']
                 wins = int(row['wins'])
                 losses = int(row['losses'])
